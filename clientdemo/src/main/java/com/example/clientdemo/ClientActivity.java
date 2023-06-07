@@ -18,6 +18,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.testgradle.IShopAidlInterface;
+import com.example.testgradle.IShopProductCallback;
+import com.example.testgradle.Product;
 
 public class ClientActivity extends Activity {
 
@@ -48,11 +50,19 @@ public class ClientActivity extends Activity {
         bindService(serviceIntent, new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                Log.i("ClientActivity", "onServiceConnected() service=" + service);
+                Log.i(TAG, "onServiceConnected() service=" + service);
                 iShopAidlInterface = IShopAidlInterface.Stub.asInterface(service);
                 try {
                     iShopAidlInterface.getProductInfo(1221);
                     iShopAidlInterface.buyProduct1(9988, "大连市甘井子区");
+
+                    Log.i(TAG, "Client: register Stub to Server!");
+                    iShopAidlInterface.registerCallback(new IShopProductCallback.Stub() {
+                        @Override
+                        public void onProductChanged(Product product) throws RemoteException {
+                            Log.i(TAG, "Client: received product changed -- " + product.getNo() + " name:" + product.getName());
+                        }
+                    });
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
